@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
+import logging
+from fastapi import APIRouter, Request
+from fastapi.responses import StreamingResponse, JSONResponse
+from pydantic import BaseModel, constr
 from app.prompts import SYSTEM_PROMPT
 from app.config import settings
 
@@ -9,16 +11,24 @@ from openai import OpenAI
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 router = APIRouter()
+logger = logging.getLogger("app")
 
-@router.post("/complete")
-def complete(body: dict):
-    q = (body.get("message") or "").strip()
-    if not q:
-        return {"reply": "(message vide)"}
+
+class ChatRequest(BaseModel):
+    message: constr(strip_whitespace=True, min_length=1)
+
+
+class ChatResponse(BaseModel):
+    reply: str
+
+@router.post("/complete", response_model=ChatResponse)
+def complete(payload: ChatRequest, request: Request):
+    q = payload.message
+    logger.info({"event": "chat_complete", "message": q})
 
     # Fallback local si pas de clé (ou si on veut juste tester le front)
     if not settings.OPENAI_API_KEY:
-        return {"reply": f"[LOCAL MODE] Pong: {q}"}
+        return ChatResponse(reply=f"[LOCAL MODE] Pong: {q}")
 
     try:
         rsp = client.chat.completions.create(
@@ -29,10 +39,10 @@ def complete(body: dict):
             ],
             temperature=0.3,
         )
-        return {"reply": rsp.choices[0].message.content}
+        return ChatResponse(reply=rsp.choices[0].message.content)
     except Exception as e:
-        # Pas de 500 qui tue le front : on renvoie le texte d'erreur
-        return {"reply": f"[ERROR LLM] {type(e).__name__}: {e}"}
+        logger.exception("chat_complete failed")
+        return JSONResponse(status_code=500, content={"detail": f"LLM error: {type(e).__name__}"})
 
 @router.post("/complete/stream")
 def complete_stream(body: dict):
