@@ -18,33 +18,33 @@ export default function JobsView(){
   })
   const list = data || []
 
-  if (isLoading) return <div className="p-4">Chargement…</div>
+  if (isLoading) return <div className="p-4 text-slate-700 dark:text-slate-200">Chargement…</div>
   if (isError) return <div className="p-4 text-red-600">Erreur de chargement</div>
 
   return (
-    <div className="flex-1 overflow-auto p-4">
-      <h2 className="text-lg font-semibold mb-3">Emplois (ReliefWeb)</h2>
+    <div className="flex-1 overflow-auto p-4 bg-slate-50 dark:bg-slate-900">
+      <h2 className="text-lg font-semibold mb-3 text-slate-900 dark:text-slate-100">Emplois (ReliefWeb)</h2>
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <div>
-          <label className="block text-xs text-slate-600">Organisation</label>
+          <label className="block text-xs text-slate-600 dark:text-slate-400">Organisation</label>
           <input value={filters.org}
                  onChange={(e)=>setFilters(f=>({...f, org: e.target.value}))}
-                 className="border rounded px-2 py-1" placeholder="UNICEF" />
+                 className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600" placeholder="UNICEF" />
         </div>
         <div>
-          <label className="block text-xs text-slate-600">Pays/Lieu</label>
+          <label className="block text-xs text-slate-600 dark:text-slate-400">Pays/Lieu</label>
           <input value={filters.country}
                  onChange={(e)=>setFilters(f=>({...f, country: e.target.value}))}
-                 className="border rounded px-2 py-1" placeholder="Niger" />
+                 className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600" placeholder="Niger" />
         </div>
         <div>
-          <label className="block text-xs text-slate-600">Texte</label>
+          <label className="block text-xs text-slate-600 dark:text-slate-400">Texte</label>
           <input value={filters.q}
                  onChange={(e)=>setFilters(f=>({...f, q: e.target.value}))}
-                 className="border rounded px-2 py-1" placeholder="WASH, MEAL…" />
+                 className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600" placeholder="WASH, MEAL…" />
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-sm text-slate-600">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-sm text-slate-600 dark:text-slate-400">
         <div className="min-w-[200px]">
           Affichage {list.length ? (page.offset + 1) : 0}
           –{page.offset + list.length}
@@ -59,21 +59,21 @@ export default function JobsView(){
               const n = Math.max(1, parseInt(e.target.value) || 1)
               setPage(p=>({ ...p, offset: (n - 1) * p.limit }))
             }}
-            className="w-20 border rounded px-2 py-1"
+            className="w-20 border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
           />
           <button
             onClick={()=>{ setFilters({ org: '', country: '', q: '' }); setPage(p=>({ ...p, offset: 0 })) }}
-            className="px-3 py-1 rounded border"
+            className="px-3 py-1 rounded border bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
           >Reset filtres</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {list.map(item => (
-          <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="block p-3 rounded border bg-white hover:shadow">
-            <div className="font-medium">{item.title}</div>
-            <div className="text-sm text-slate-600">{item.org || 'Organisation non précisée'} • {item.location || 'Lieu non précisé'}</div>
-            <div className="text-xs text-slate-500 flex gap-2">
+          <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="block p-3 rounded border bg-white hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:border-slate-700">
+            <div className="font-medium text-slate-900 dark:text-slate-100">{item.title}</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">{item.org || 'Organisation non précisée'} • {item.location || 'Lieu non précisé'}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 flex gap-2">
               {item.published_at && <span>publié {new Date(item.published_at).toLocaleDateString()}</span>}
               {item.deadline && <span>• clôture {new Date(item.deadline).toLocaleDateString()}</span>}
             </div>
@@ -82,11 +82,11 @@ export default function JobsView(){
       </div>
       <div className="flex items-center justify-end gap-2 mt-4">
         <div>
-          <label className="block text-xs text-slate-600">Page size</label>
+          <label className="block text-xs text-slate-600 dark:text-slate-400">Page size</label>
           <select
             value={page.limit}
             onChange={(e)=>setPage(p=>({ ...p, offset: 0, limit: parseInt(e.target.value) }))}
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
           >
             <option value={25}>25</option>
             <option value={50}>50</option>
@@ -96,12 +96,12 @@ export default function JobsView(){
         <button
           onClick={()=>setPage(p=>({ ...p, offset: Math.max(0, p.offset - p.limit) }))}
           disabled={page.offset === 0 || isLoading}
-          className={`px-3 py-1 rounded border ${page.offset===0||isLoading?'opacity-50':''}`}
+          className={`px-3 py-1 rounded border bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700 ${page.offset===0||isLoading?'opacity-50':''}`}
         >Précédent</button>
         <button
           onClick={()=>setPage(p=>({ ...p, offset: p.offset + p.limit }))}
           disabled={isLoading || (list.length < page.limit)}
-          className={`px-3 py-1 rounded border ${isLoading||list.length<page.limit?'opacity-50':''}`}
+          className={`px-3 py-1 rounded border bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700 ${isLoading||list.length<page.limit?'opacity-50':''}`}
         >Suivant</button>
       </div>
     </div>

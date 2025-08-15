@@ -121,62 +121,62 @@ export default function DocumentsView(){
 
   return (
     <section className="flex-1 flex flex-col">
-      <div className="p-4 border-b bg-white">
-        <h2 className="font-semibold">Documents</h2>
+      <div className="p-4 border-b bg-white dark:bg-slate-900 dark:border-slate-700">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
       </div>
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 bg-slate-50 dark:bg-slate-900">
         <div className="flex flex-wrap gap-2 items-center">
-          <button onClick={()=>exportDoc('pdf')} disabled={downloading} className="px-3 py-2 rounded bg-black text-white disabled:opacity-50">Exporter PDF</button>
-          <button onClick={()=>exportDoc('docx')} disabled={downloading} className="px-3 py-2 rounded bg-black text-white disabled:opacity-50">Exporter DOCX</button>
-          <button onClick={()=>exportDoc('xlsx')} disabled={downloading} className="px-3 py-2 rounded bg-black text-white disabled:opacity-50">Exporter XLSX</button>
+          <button onClick={()=>exportDoc('pdf')} disabled={downloading} className="px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Exporter PDF</button>
+          <button onClick={()=>exportDoc('docx')} disabled={downloading} className="px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Exporter DOCX</button>
+          <button onClick={()=>exportDoc('xlsx')} disabled={downloading} className="px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Exporter XLSX</button>
           <div className="flex-1 min-w-[1rem]" />
-          <a href={api.gdrive.loginUrl()} className="px-3 py-2 rounded bg-green-700 text-white whitespace-nowrap">{gConnected? 'Google Drive connecté': 'Connecter Google Drive'}</a>
-          <a href={api.onedrive.loginUrl()} className="px-3 py-2 rounded bg-blue-700 text-white whitespace-nowrap">{odConnected? 'OneDrive connecté': 'Connecter OneDrive'}</a>
+          <a href={api.gdrive.loginUrl()} className="px-3 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 whitespace-nowrap">{gConnected? 'Google Drive connecté': 'Connecter Google Drive'}</a>
+          <a href={api.onedrive.loginUrl()} className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 whitespace-nowrap">{odConnected? 'OneDrive connecté': 'Connecter OneDrive'}</a>
         </div>
 
-        <div className={`border rounded p-4 bg-white ${dragOver? 'ring-2 ring-blue-500': ''}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
+        <div className={`border rounded p-4 bg-white dark:bg-slate-800 dark:border-slate-700 ${dragOver? 'ring-2 ring-blue-500': ''}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div>
-              <div className="font-medium">Téléverser des fichiers</div>
-              <div className="text-sm text-slate-500">PDF, Word, Excel, etc.</div>
+              <div className="font-medium text-slate-900 dark:text-slate-100">Téléverser des fichiers</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400">PDF, Word, Excel, etc.</div>
             </div>
 
           <div className="mt-6">
             <div className="flex items-center gap-2 mb-2">
-              <div className="text-sm font-medium">OneDrive</div>
+              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">OneDrive</div>
               {odConnected ? (
                 <span className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700">Connecté</span>
               ) : (
-                <span className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600">Non connecté</span>
+                <span className="text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">Non connecté</span>
               )}
               <div className="flex-1" />
-              <input value={odQuery} onChange={e=>setOdQuery(e.target.value)} placeholder="Rechercher..." className="border rounded px-2 py-1 text-sm" />
-              <button disabled={!odConnected} onClick={async()=>{ const r=await api.onedrive.list(odQuery); setOdItems(r.files||[]) }} className="text-sm px-2 py-1 rounded bg-slate-800 text-white disabled:opacity-50">Lister</button>
+              <input value={odQuery} onChange={e=>setOdQuery(e.target.value)} placeholder="Rechercher..." className="border rounded px-2 py-1 text-sm bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600" />
+              <button disabled={!odConnected} onClick={async()=>{ const r=await api.onedrive.list(odQuery); setOdItems(r.files||[]) }} className="text-sm px-2 py-1 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Lister</button>
             </div>
             <ul className="divide-y">
               {odItems.map(it=> (
                 <li key={it.id} className="py-2 flex items-center justify-between">
-                  <div className="text-sm">{it.name} <span className="text-xs text-slate-500">{it.mimeType}</span></div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100">{it.name} <span className="text-xs text-slate-500 dark:text-slate-400">{it.mimeType}</span></div>
                   <div className="flex gap-2">
-                    <button onClick={async()=>{ await api.onedrive.import(it.id); await refresh() }} className="text-sm px-2 py-1 rounded bg-blue-600 text-white">Importer</button>
+                    <button onClick={async()=>{ await api.onedrive.import(it.id); await refresh() }} className="text-sm px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Importer</button>
                   </div>
                 </li>
               ))}
-              {odConnected && odItems.length===0 && <li className="py-2 text-sm text-slate-500">Aucun fichier. Lance une recherche ou clique Lister.</li>}
-              {!odConnected && <li className="py-2 text-sm text-slate-500">Connecte OneDrive pour lister et importer des fichiers.</li>}
+              {odConnected && odItems.length===0 && <li className="py-2 text-sm text-slate-500 dark:text-slate-400">Aucun fichier. Lance une recherche ou clique Lister.</li>}
+              {!odConnected && <li className="py-2 text-sm text-slate-500 dark:text-slate-400">Connecte OneDrive pour lister et importer des fichiers.</li>}
             </ul>
           </div>
             <div>
               <input ref={fileRef} type="file" multiple className="hidden" onChange={onFiles} />
-              <button onClick={openPicker} className="px-3 py-2 rounded bg-slate-800 text-white">Choisir des fichiers</button>
+              <button onClick={openPicker} className="px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Choisir des fichiers</button>
             </div>
           </div>
-          <div className="text-xs text-slate-500 mt-2">Astuce: Glisser-déposer des fichiers ici pour les importer. Les envois en cours s’affichent ci-dessous.</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">Astuce: Glisser-déposer des fichiers ici pour les importer. Les envois en cours s’affichent ci-dessous.</div>
           {queue.length>0 && (
             <div className="mt-3">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 mb-2">
-                <div className="text-sm font-medium">Envois en cours</div>
-                <button onClick={cancelAll} className="text-xs px-2 py-1 rounded bg-red-600 text-white">Annuler tout</button>
+                <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Envois en cours</div>
+                <button onClick={cancelAll} className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Annuler tout</button>
               </div>
               <ul className="space-y-2">
                 {queue.map(t=> (
@@ -185,11 +185,11 @@ export default function DocumentsView(){
                       <span className="truncate mr-2 max-w-full">{t.name}</span>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className="text-xs text-slate-500">{Math.round((t.progress||0)*100)}%</span>
-                        <button onClick={()=>{ t.abort?.(); setQueue(q=>q.filter(x=>x.name!==t.name)) }} className="text-xs px-2 py-1 rounded bg-red-600 text-white">Annuler</button>
+                        <button onClick={()=>{ t.abort?.(); setQueue(q=>q.filter(x=>x.name!==t.name)) }} className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Annuler</button>
                       </div>
                     </div>
-                    <div className="h-2 bg-slate-200 rounded overflow-hidden">
-                      <div className="h-full bg-blue-600" style={{ width: `${(t.progress||0)*100}%` }} />
+                    <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded overflow-hidden">
+                      <div className="h-full bg-blue-600 dark:bg-blue-500" style={{ width: `${(t.progress||0)*100}%` }} />
                     </div>
                   </li>
                 ))}
@@ -201,14 +201,14 @@ export default function DocumentsView(){
             <ul className="divide-y">
               {files.map(f=> (
                 <li key={f.name} className="py-2 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-                  <div className="text-sm break-words max-w-full">{f.name} <span className="text-xs text-slate-500">({f.size} o)</span></div>
+                  <div className="text-sm break-words max-w-full text-slate-900 dark:text-slate-100">{f.name} <span className="text-xs text-slate-500 dark:text-slate-400">({f.size} o)</span></div>
                   <div className="flex gap-2 flex-wrap">
-                    {isPDF(f.name) && <button onClick={()=>previewPdf(f.name)} className="text-sm px-2 py-1 rounded bg-slate-700 text-white">Prévisualiser</button>}
-                    <button onClick={()=>download(f.name)} className="text-sm px-2 py-1 rounded bg-black text-white">Télécharger</button>
+                    {isPDF(f.name) && <button onClick={()=>previewPdf(f.name)} className="text-sm px-2 py-1 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Prévisualiser</button>}
+                    <button onClick={()=>download(f.name)} className="text-sm px-2 py-1 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Télécharger</button>
                   </div>
                 </li>
               ))}
-              {files.length===0 && <li className="py-2 text-sm text-slate-500">Aucun fichier pour le moment.</li>}
+              {files.length===0 && <li className="py-2 text-sm text-slate-500 dark:text-slate-400">Aucun fichier pour le moment.</li>}
             </ul>
           </div>
 
@@ -218,35 +218,35 @@ export default function DocumentsView(){
               {gConnected ? (
                 <span className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700">Connecté</span>
               ) : (
-                <span className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600">Non connecté</span>
+                <span className="text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">Non connecté</span>
               )}
               <div className="flex-1" />
-              <input value={gQuery} onChange={e=>setGQuery(e.target.value)} placeholder="Rechercher..." className="border rounded px-2 py-1 text-sm w-full md:w-auto" />
-              <button disabled={!gConnected} onClick={async()=>{ const r=await api.gdrive.list(gQuery); setGItems(r.files||[]) }} className="text-sm px-2 py-1 rounded bg-slate-800 text-white disabled:opacity-50">Lister</button>
+              <input value={gQuery} onChange={e=>setGQuery(e.target.value)} placeholder="Rechercher..." className="border rounded px-2 py-1 text-sm w-full md:w-auto bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600" />
+              <button disabled={!gConnected} onClick={async()=>{ const r=await api.gdrive.list(gQuery); setGItems(r.files||[]) }} className="text-sm px-2 py-1 rounded border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">Lister</button>
             </div>
             <ul className="divide-y">
               {gItems.map(it=> (
                 <li key={it.id} className="py-2 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-                  <div className="text-sm break-words max-w-full">{it.name} <span className="text-xs text-slate-500">{it.mimeType}</span></div>
+                  <div className="text-sm break-words max-w-full text-slate-900 dark:text-slate-100">{it.name} <span className="text-xs text-slate-500 dark:text-slate-400">{it.mimeType}</span></div>
                   <div className="flex gap-2 flex-wrap">
-                    <button onClick={async()=>{ await api.gdrive.import(it.id); await refresh() }} className="text-sm px-2 py-1 rounded bg-blue-600 text-white">Importer</button>
+                    <button onClick={async()=>{ await api.gdrive.import(it.id); await refresh() }} className="text-sm px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Importer</button>
                   </div>
                 </li>
               ))}
-              {gConnected && gItems.length===0 && <li className="py-2 text-sm text-slate-500">Aucun fichier. Lance une recherche ou clique Lister.</li>}
-              {!gConnected && <li className="py-2 text-sm text-slate-500">Connecte Google Drive pour lister et importer des fichiers.</li>}
+              {gConnected && gItems.length===0 && <li className="py-2 text-sm text-slate-500 dark:text-slate-400">Aucun fichier. Lance une recherche ou clique Lister.</li>}
+              {!gConnected && <li className="py-2 text-sm text-slate-500 dark:text-slate-400">Connecte Google Drive pour lister et importer des fichiers.</li>}
             </ul>
           </div>
         </div>
 
         {preview && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closePreview}>
-            <div className="bg-white w-[90vw] h-[90vh] rounded shadow-lg overflow-hidden" onClick={e=>e.stopPropagation()}>
-              <div className="p-2 border-b flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-900 w-[90vw] h-[90vh] rounded shadow-lg overflow-hidden" onClick={e=>e.stopPropagation()}>
+              <div className="p-2 border-b dark:border-slate-700 flex items-center justify-between text-slate-900 dark:text-slate-100">
                 <div className="font-medium text-sm">Prévisualisation: {preview.name}</div>
-                <button onClick={closePreview} className="px-2 py-1 text-sm bg-slate-800 text-white rounded">Fermer</button>
+                <button onClick={closePreview} className="px-2 py-1 text-sm bg-slate-800 text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Fermer</button>
               </div>
-              <iframe title="PDF Preview" src={preview.url} className="w-full h-full" />
+              <iframe title="PDF Preview" src={preview.url} className="w-full h-full bg-white dark:bg-slate-900" />
             </div>
           </div>
         )}
