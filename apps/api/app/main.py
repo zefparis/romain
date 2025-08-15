@@ -140,3 +140,8 @@ async def unhandled_exceptions(request: Request, exc: Exception):
 
 
 app.include_router(router)
+
+# Root endpoint (avoid 404 on "/")
+@app.get("/", include_in_schema=False)
+def root_index():
+    return {"status": "ok", "service": "romain-api", "health": "/healthz"}
