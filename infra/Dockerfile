@@ -15,5 +15,5 @@ COPY apps/api ./apps/api
 COPY --from=web /app/web/dist ./static
 WORKDIR /app/apps/api
 ENV PORT=8000
-# Run DB migrations on startup, then launch the API. Use $PORT provided by platform if set.
-CMD ["/bin/sh", "-c", "alembic -c apps/api/alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run DB migrations on startup via module to avoid PATH issues, then launch the API.
+CMD ["/bin/sh", "-c", "python -m alembic -c alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
