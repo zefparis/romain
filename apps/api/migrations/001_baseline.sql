@@ -1,0 +1,1 @@
+-- Baseline migration (no-op). Keep future SQL migrations here, e.g. 002_create_tables.sql

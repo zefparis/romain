@@ -18,5 +18,5 @@ COPY apps/api ./apps/api
 COPY --from=web /app/web/dist ./static
 WORKDIR /app/apps/api
 ENV PORT=8000
-# Run DB migrations then start the API on the provided PORT
-CMD ["/bin/sh", "-c", "python -m alembic -c /app/apps/api/alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run SQL migrations programmatically, then start the API on the provided PORT
+CMD ["/bin/sh", "-c", "python -m app.sql_migrate && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
