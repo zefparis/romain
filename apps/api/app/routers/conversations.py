@@ -211,15 +211,18 @@ def chat_with_assistant(
     messages.extend(context)
     
     try:
-        # Appel à OpenAI
-        response = client.chat.completions.create(
-            model=settings.OPENAI_MODEL,
-            messages=messages,
-            temperature=0.3,
-            max_tokens=1000
-        )
-        
-        assistant_content = response.choices[0].message.content
+        # Fallback local si pas de clé: simuler une réponse simple pour la démo
+        if not settings.OPENAI_API_KEY:
+            assistant_content = f"[LOCAL MODE] Pong: {chat_request.message}"
+        else:
+            # Appel à OpenAI
+            response = client.chat.completions.create(
+                model=settings.OPENAI_MODEL,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=1000
+            )
+            assistant_content = response.choices[0].message.content
         
         # Ajouter la réponse de l'assistant
         assistant_message = service.add_message(conversation_id, "assistant", assistant_content)
@@ -251,6 +254,24 @@ def chat_with_assistant(
         )
         
     except Exception as e:
+        # En absence de clé, on ne devrait pas arriver ici, mais par sécurité
+        if not settings.OPENAI_API_KEY:
+            assistant_message = service.add_message(conversation_id, "assistant", f"[LOCAL MODE][ERROR] {type(e).__name__}")
+            return ChatResponse(
+                message=MessageResponse(
+                    id=user_message.id,
+                    role=user_message.role,
+                    content=user_message.content,
+                    created_at=user_message.created_at
+                ),
+                assistant_response=MessageResponse(
+                    id=assistant_message.id,
+                    role=assistant_message.role,
+                    content=assistant_message.content,
+                    created_at=assistant_message.created_at
+                ),
+                conversation_id=conversation_id
+            )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de l'appel à OpenAI: {str(e)}"
