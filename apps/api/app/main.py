@@ -141,12 +141,21 @@ async def unhandled_exceptions(request: Request, exc: Exception):
 
 app.include_router(router)
 
-# Root endpoint: redirect to frontend if configured, otherwise to /docs
+# Root endpoint: redirect to frontend if configured and different host; else /docs
 @app.get("/", include_in_schema=False)
-def root_index():
+def root_index(request: Request):
+    from urllib.parse import urlparse
+
     web_app_url = os.getenv("WEB_APP_URL", "").strip()
     public_frontend = os.getenv("PUBLIC_FRONTEND_URL", "").strip()
     target = web_app_url or public_frontend
+
     if target and (target.startswith("http://") or target.startswith("https://")):
-        return RedirectResponse(url=target, status_code=307)
+        try:
+            target_host = urlparse(target).netloc
+            current_host = request.url.netloc
+            if target_host and target_host.lower() != current_host.lower():
+                return RedirectResponse(url=target, status_code=307)
+        except Exception:
+            pass
     return RedirectResponse(url="/docs", status_code=307)
