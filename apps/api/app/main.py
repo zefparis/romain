@@ -141,7 +141,12 @@ async def unhandled_exceptions(request: Request, exc: Exception):
 
 app.include_router(router)
 
-# Root endpoint (avoid 404 on "/")
+# Root endpoint: redirect to frontend if configured, otherwise to /docs
 @app.get("/", include_in_schema=False)
 def root_index():
-    return {"status": "ok", "service": "romain-api", "health": "/healthz"}
+    web_app_url = os.getenv("WEB_APP_URL", "").strip()
+    public_frontend = os.getenv("PUBLIC_FRONTEND_URL", "").strip()
+    target = web_app_url or public_frontend
+    if target and (target.startswith("http://") or target.startswith("https://")):
+        return RedirectResponse(url=target, status_code=307)
+    return RedirectResponse(url="/docs", status_code=307)
