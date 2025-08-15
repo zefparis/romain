@@ -150,12 +150,32 @@ def root_index(request: Request):
     public_frontend = os.getenv("PUBLIC_FRONTEND_URL", "").strip()
     target = web_app_url or public_frontend
 
+    # If a target URL is provided, try to use it first.
     if target and (target.startswith("http://") or target.startswith("https://")):
         try:
-            target_host = urlparse(target).netloc
+            parsed = urlparse(target)
+            target_host = parsed.netloc
+            target_path = parsed.path or "/"
             current_host = request.url.netloc
-            if target_host and target_host.lower() != current_host.lower():
-                return RedirectResponse(url=target, status_code=307)
+
+            # If the target points to the same host root, prefer the built static UI when available
+            if target_host and target_host.lower() == current_host.lower() and target_path in {"", "/"}:
+                index_path = os.path.join(STATIC_DIR, "index.html")
+                if os.path.exists(index_path):
+                    return RedirectResponse(url="/static/index.html", status_code=307)
+                # Fall back to docs if no static build
+                return RedirectResponse(url="/docs", status_code=307)
+
+            # Otherwise redirect to the provided absolute URL as-is
+            return RedirectResponse(url=target, status_code=307)
         except Exception:
+            # If parsing fails, continue to static/docs fallback
             pass
+
+    # No target provided: try to serve the built static UI if present
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_path):
+        return RedirectResponse(url="/static/index.html", status_code=307)
+
+    # Final fallback to the API docs
     return RedirectResponse(url="/docs", status_code=307)
