@@ -13,6 +13,20 @@ export default function App(){
   const [current, setCurrent] = useState(null)
   const [tab, setTab] = useState('chat') // 'chat' | 'docs' | 'crises' | 'jobs' | 'funding'
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [theme, setTheme] = useState(()=>{
+    try {
+      const saved = localStorage.getItem('theme')
+      if (saved === 'dark' || saved === 'light') return saved
+    } catch (_) {}
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    return prefersDark ? 'dark' : 'light'
+  })
+
+  useEffect(()=>{
+    const root = document.documentElement
+    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark')
+    try { localStorage.setItem('theme', theme) } catch (_) {}
+  }, [theme])
 
   // Create a new conversation if none selected on first load
   async function ensureConversation(){
@@ -29,28 +43,31 @@ export default function App(){
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row safe-area-px">
+      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 flex flex-col md:flex-row safe-area-px">
         {/* Sidebar: hidden on mobile unless toggled */}
         <div className={`md:block ${sidebarOpen ? 'block' : 'hidden'} md:static fixed inset-0 z-40 md:z-auto`}>
           <div className={`absolute inset-0 bg-black/40 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`} onClick={()=>setSidebarOpen(false)} />
-          <div className="relative md:relative md:translate-x-0 w-72 max-w-[80vw] h-screen md:h-screen bg-white shadow md:shadow-none">
+          <div className="relative md:relative md:translate-x-0 w-72 max-w-[80vw] h-screen md:h-screen bg-white dark:bg-slate-800 shadow md:shadow-none">
             <Sidebar currentId={current?.id} onSelect={(c)=>{ setCurrent(c); setSidebarOpen(false) }} onNew={async ()=>{ await onNewConversation(); setSidebarOpen(false) }} />
           </div>
         </div>
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="p-2 md:p-4 border-b bg-white flex items-center justify-between gap-2 sticky top-0 z-30">
+          <header className="p-2 md:p-4 border-b bg-white dark:bg-slate-900 dark:border-slate-700 flex items-center justify-between gap-2 sticky top-0 z-30">
             <div className="flex items-center gap-2">
               <button className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded border tap-transparent touch-manipulation" onClick={()=>setSidebarOpen(s=>!s)} aria-label="Ouvrir le menu">
                 <span className="i--menu">≡</span>
               </button>
               <h1 className="text-base md:text-xl font-bold truncate">Assistant Romain</h1>
             </div>
-            <nav className="flex flex-wrap gap-2 justify-end">
-              <button onClick={()=>setTab('chat')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='chat'?'bg-black text-white':'bg-slate-200'}`}>Chat</button>
-              <button onClick={()=>setTab('docs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='docs'?'bg-black text-white':'bg-slate-200'}`}>Documents</button>
-              <button onClick={()=>setTab('crises')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='crises'?'bg-black text-white':'bg-slate-200'}`}>Crises</button>
-              <button onClick={()=>setTab('jobs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='jobs'?'bg-black text-white':'bg-slate-200'}`}>Emplois</button>
-              <button onClick={()=>setTab('funding')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='funding'?'bg-black text-white':'bg-slate-200'}`}>Financements</button>
+            <nav className="flex flex-wrap gap-2 justify-end items-center">
+              <button onClick={()=>setTab('chat')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='chat'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Chat</button>
+              <button onClick={()=>setTab('docs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='docs'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Documents</button>
+              <button onClick={()=>setTab('crises')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='crises'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Crises</button>
+              <button onClick={()=>setTab('jobs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='jobs'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Emplois</button>
+              <button onClick={()=>setTab('funding')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='funding'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Financements</button>
+              <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} className="ml-2 px-3 py-2 rounded border text-sm md:text-base bg-white dark:bg-slate-800 dark:border-slate-700" aria-label="Basculer le thème">
+                {theme==='dark' ? '☀️ Clair' : '🌙 Sombre'}
+              </button>
             </nav>
           </header>
           <main className="flex-1 flex min-w-0">
@@ -58,8 +75,8 @@ export default function App(){
               current ? (
                 <ChatView conversation={current} />
               ) : (
-                <div className="p-6 text-slate-600">
-                  <button onClick={ensureConversation} className="px-4 py-2 rounded bg-black text-white">Nouvelle conversation</button>
+                <div className="p-6 text-slate-600 dark:text-slate-300">
+                  <button onClick={ensureConversation} className="px-4 py-2 rounded bg-black text-white dark:bg-slate-100 dark:text-slate-900">Nouvelle conversation</button>
                 </div>
               )
             ) : tab==='docs' ? (
