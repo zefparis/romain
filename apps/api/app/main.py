@@ -58,20 +58,30 @@ def on_startup():
     ensure_database_and_extensions()
     init_db()
 
-# Serve static files if present (Docker copies web dist into ./static)
-STATIC_DIR = os.getenv("STATIC_DIR", "static")
-if os.path.isdir(STATIC_DIR):
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-    logger.info(f"Static mounted at /static from '{STATIC_DIR}'")
+# Serve static files if present (Docker copies web dist into /app/static)
+STATIC_DIR_ENV = os.getenv("STATIC_DIR", "static").strip() or "static"
+
+# Resolve a usable absolute path for static dir
+_cwd = os.getcwd()
+_candidates = [
+    STATIC_DIR_ENV,  # relative to current working dir
+    os.path.abspath(os.path.join(_cwd, STATIC_DIR_ENV)),
+    os.path.abspath(os.path.join(_cwd, "..", "..", STATIC_DIR_ENV)),  # e.g., /app/static from /app/apps/api
+]
+STATIC_DIR_RESOLVED = next((p for p in _candidates if os.path.isdir(p)), None)
+
+if STATIC_DIR_RESOLVED:
+    app.mount("/static", StaticFiles(directory=STATIC_DIR_RESOLVED), name="static")
+    logger.info(f"Static mounted at /static from '{STATIC_DIR_RESOLVED}' (env='{STATIC_DIR_ENV}')")
 else:
-    logger.warning(f"Static directory '{STATIC_DIR}' not found. Skipping mount.")
+    logger.warning(f"Static directory not found. Tried: {', '.join(_candidates)}. Skipping mount.")
 
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
     """Serve favicon from /static if available, otherwise return 204."""
-    path = os.path.join(STATIC_DIR, "favicon.ico")
-    if os.path.exists(path):
+    path = os.path.join(STATIC_DIR_RESOLVED or "", "favicon.ico")
+    if STATIC_DIR_RESOLVED and os.path.exists(path):
         return RedirectResponse(url="/static/favicon.ico")
     return Response(status_code=204)
 
@@ -160,8 +170,8 @@ def root_index(request: Request):
 
             # If the target points to the same host root, prefer the built static UI when available
             if target_host and target_host.lower() == current_host.lower() and target_path in {"", "/"}:
-                index_path = os.path.join(STATIC_DIR, "index.html")
-                if os.path.exists(index_path):
+                index_path = os.path.join(STATIC_DIR_RESOLVED or "", "index.html")
+                if STATIC_DIR_RESOLVED and os.path.exists(index_path):
                     return RedirectResponse(url="/static/index.html", status_code=307)
                 # Fall back to docs if no static build
                 return RedirectResponse(url="/docs", status_code=307)
@@ -173,8 +183,8 @@ def root_index(request: Request):
             pass
 
     # No target provided: try to serve the built static UI if present
-    index_path = os.path.join(STATIC_DIR, "index.html")
-    if os.path.exists(index_path):
+    index_path = os.path.join(STATIC_DIR_RESOLVED or "", "index.html")
+    if STATIC_DIR_RESOLVED and os.path.exists(index_path):
         return RedirectResponse(url="/static/index.html", status_code=307)
 
     # Final fallback to the API docs
