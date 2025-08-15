@@ -73,6 +73,11 @@ STATIC_DIR_RESOLVED = next((p for p in _candidates if os.path.isdir(p)), None)
 if STATIC_DIR_RESOLVED:
     app.mount("/static", StaticFiles(directory=STATIC_DIR_RESOLVED), name="static")
     logger.info(f"Static mounted at /static from '{STATIC_DIR_RESOLVED}' (env='{STATIC_DIR_ENV}')")
+    # Also mount Vite assets at root /assets if present (Vite uses absolute /assets paths by default)
+    assets_dir = os.path.join(STATIC_DIR_RESOLVED, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+        logger.info(f"Assets mounted at /assets from '{assets_dir}'")
 else:
     logger.warning(f"Static directory not found. Tried: {', '.join(_candidates)}. Skipping mount.")
 
