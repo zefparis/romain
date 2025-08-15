@@ -60,11 +60,41 @@ export default function App(){
               <h1 className="text-base md:text-xl font-bold truncate">Assistant Romain</h1>
             </div>
             <nav className="flex flex-wrap gap-2 justify-end items-center">
-              <button onClick={()=>setTab('chat')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='chat'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Chat</button>
-              <button onClick={()=>setTab('docs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='docs'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Documents</button>
-              <button onClick={()=>setTab('crises')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='crises'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Crises</button>
-              <button onClick={()=>setTab('jobs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='jobs'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Emplois</button>
-              <button onClick={()=>setTab('funding')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='funding'?'bg-black text-white':'bg-slate-200 dark:bg-slate-700'}`}>Financements</button>
+              <button
+                onClick={()=>setTab('chat')}
+                className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  ${tab==='chat'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'}`}
+              >Chat</button>
+              <button
+                onClick={()=>setTab('docs')}
+                className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  ${tab==='docs'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'}`}
+              >Documents</button>
+              <button
+                onClick={()=>setTab('crises')}
+                className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  ${tab==='crises'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'}`}
+              >Crises</button>
+              <button
+                onClick={()=>setTab('jobs')}
+                className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  ${tab==='jobs'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'}`}
+              >Emplois</button>
+              <button
+                onClick={()=>setTab('funding')}
+                className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  ${tab==='funding'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'}`}
+              >Financements</button>
               <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} className="ml-2 px-3 py-2 rounded border text-sm md:text-base bg-white dark:bg-slate-800 dark:border-slate-700" aria-label="Basculer le thème">
                 {theme==='dark' ? '☀️ Clair' : '🌙 Sombre'}
               </button>

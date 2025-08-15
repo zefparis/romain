@@ -9,7 +9,7 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api/, "")
+        // Keep the /api prefix so frontend calls like /api/conversations map to backend /api/conversations
       },
       "/chat": {
         target: "http://localhost:8000",

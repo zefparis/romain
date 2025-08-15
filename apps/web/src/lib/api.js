@@ -80,6 +80,11 @@ export const api = {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.blob()
   },
+  exportConversation: async (id, format) => {
+    const res = await fetch(`${baseURL}/api/conversations/${encodeURIComponent(id)}/export?format=${encodeURIComponent(format||'pdf')}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return res.blob()
+  },
   // Google Drive integrations
   gdrive: {
     loginUrl: () => `${baseURL}/api/integrations/google/auth`,

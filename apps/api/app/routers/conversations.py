@@ -3,8 +3,10 @@
 API endpoints pour la gestion des conversations
 """
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import io
 from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid
@@ -328,3 +330,98 @@ def delete_conversation(
         )
     
     return {"message": "Conversation supprimée avec succès"}
+
+@router.get("/conversations/{conversation_id}/export")
+def export_conversation(
+    conversation_id: uuid.UUID,
+    format: str = "pdf",
+    db: Session = Depends(get_db)
+):
+    """Exporte la conversation au format demandé: pdf | docx | xlsx"""
+    service = ConversationService(db)
+    conversation = service.get_conversation(conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation non trouvée")
+
+    # Collecte des messages
+    rows = [
+        {
+            "date": m.created_at.strftime("%Y-%m-%d %H:%M"),
+            "role": m.role,
+            "content": m.content,
+        }
+        for m in conversation.messages
+    ]
+
+    fmt = (format or "pdf").lower()
+    filename_base = f"conversation_{conversation.id}"
+
+    if fmt == "pdf":
+        # Construire un HTML simple et convertir en PDF via WeasyPrint
+        try:
+            from weasyprint import HTML, CSS
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"WeasyPrint indisponible: {e}")
+        html = [
+            "<html><head><meta charset='utf-8'><style>",
+            "body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;padding:24px;color:#0f172a}",
+            "h1{font-size:16pt;margin-bottom:16px}",
+            ".msg{margin:10px 0;padding:10px;border:1px solid #e2e8f0;border-radius:8px}",
+            ".role{font-weight:bold;margin-bottom:6px}",
+            ".date{color:#64748b;font-size:10pt}",
+            "</style></head><body>",
+            f"<h1>{conversation.title or 'Conversation'}</h1>",
+        ]
+        for r in rows:
+            content_html = (r['content'] or '').replace('\n', '<br/>')
+            html.append(
+                f"<div class='msg'><div class='role'>{r['role'].capitalize()}</div>"
+                f"<div class='date'>{r['date']}</div>"
+                f"<div class='content'>{content_html}</div></div>"
+            )
+        html.append("</body></html>")
+        html_str = "".join(html)
+        pdf_bytes = HTML(string=html_str).write_pdf()
+        bio = io.BytesIO(pdf_bytes)
+        bio.seek(0)
+        headers = {"Content-Disposition": f"attachment; filename={filename_base}.pdf"}
+        return StreamingResponse(bio, media_type="application/pdf", headers=headers)
+
+    if fmt == "docx":
+        try:
+            from docx import Document
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"python-docx indisponible: {e}")
+        doc = Document()
+        doc.add_heading(conversation.title or "Conversation", level=1)
+        for r in rows:
+            p = doc.add_paragraph()
+            p.add_run(f"{r['role'].capitalize()} ").bold = True
+            p.add_run(f"({r['date']})\n").italic = True
+            for line in (r['content'] or '').splitlines():
+                p.add_run(line)
+                p.add_run("\n")
+        bio = io.BytesIO()
+        doc.save(bio)
+        bio.seek(0)
+        headers = {"Content-Disposition": f"attachment; filename={filename_base}.docx"}
+        return StreamingResponse(bio, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers=headers)
+
+    if fmt == "xlsx":
+        try:
+            import pandas as pd
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"pandas indisponible: {e}")
+        df = pd.DataFrame(rows, columns=["date", "role", "content"])
+        bio = io.BytesIO()
+        # Use xlsxwriter if available, else default engine
+        try:
+            with pd.ExcelWriter(bio, engine="xlsxwriter") as writer:
+                df.to_excel(writer, index=False, sheet_name="Messages")
+        except Exception:
+            df.to_excel(bio, index=False)
+        bio.seek(0)
+        headers = {"Content-Disposition": f"attachment; filename={filename_base}.xlsx"}
+        return StreamingResponse(bio, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers=headers)
+
+    raise HTTPException(status_code=400, detail="Format non supporté. Utilisez pdf | docx | xlsx")
