@@ -13,6 +13,7 @@ async function http(path, { method = 'GET', body, headers } = {}) {
 export const api = {
   listConversations: () => http('/api/conversations'),
   createConversation: (title) => http('/api/conversations', { method: 'POST', body: { title } }),
+  deleteConversation: (id) => http(`/api/conversations/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   getMessages: (id) => http(`/api/conversations/${id}/messages`),
   sendMessage: ({ conversation_id, message }) => http('/api/chat', { method: 'POST', body: { conversation_id, message } }),
   streamComplete: async ({ message, onToken }) => {
