@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-4o"
+    OPENAI_MODEL: str = "gpt-4-turbo"
     EMBED_MODEL: str = "text-embedding-3-large"
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/romain"
     REDIS_URL: str = "redis://localhost:6379/0"

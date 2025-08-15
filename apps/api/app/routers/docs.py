@@ -1,29 +1,68 @@
+# -*- coding: utf-8 -*-
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse, Response
 from jinja2 import Environment, FileSystemLoader
-from weasyprint import HTML
-from docxtpl import DocxTemplate
 import io, pandas as pd
+
+# WeasyPrint en option (Windows peut manquer de libs GTK/Pango/Cairo)
+HAS_WEASY = False
+try:
+    from weasyprint import HTML  # type: ignore
+    HAS_WEASY = True
+except Exception:
+    HAS_WEASY = False
+
 router = APIRouter()
 env = Environment(loader=FileSystemLoader("templates"))
+
 @router.post("/export/pdf")
 def export_pdf(body: dict):
-    tpl = env.get_template(body.get("template", "report.html"))
-    html = tpl.render(**body.get("data", {}))
-    pdf = HTML(string=html).write_pdf()
-    return Response(pdf, media_type="application/pdf")
+    data = body.get("data", {})
+    # Si WeasyPrint dispo => HTML->PDF
+    if HAS_WEASY:
+        tpl_name = body.get("template", "report.html")
+        tpl = env.get_template(tpl_name)
+        html = tpl.render(**data)
+        pdf = HTML(string=html).write_pdf()
+        return Response(pdf, media_type="application/pdf")
+
+    # Fallback ReportLab: prend data.text (texte brut), sinon un message par défaut
+    from reportlab.pdfgen import canvas  # lazy import
+    from reportlab.lib.pagesizes import A4
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+    y = height - 50
+
+    text = data.get("text") or (
+        "WeasyPrint indisponible sur Windows (GTK/Pango/Cairo manquants).\n"
+        "Fallback ReportLab actif. Fournissez data.text pour un rendu texte.\n"
+        "Exemple payload: {\"format\":\"pdf\",\"data\":{\"text\":\"Bonjour Romain\"}}"
+    )
+
+    for line in str(text).splitlines():
+        c.drawString(50, y, line[:110])  # coupe un peu pour éviter d'aller hors page
+        y -= 16
+        if y < 50:
+            c.showPage(); y = height - 50
+    c.save()
+    buf.seek(0)
+    return StreamingResponse(buf, media_type="application/pdf")
+
 @router.post("/export/docx")
 def export_docx(body: dict):
+    from docxtpl import DocxTemplate
     tpl = DocxTemplate("templates/report.docx")
     tpl.render(body.get("data", {}))
-    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
-    return StreamingResponse(buf, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    stream = io.BytesIO(); tpl.save(stream); stream.seek(0)
+    return StreamingResponse(stream, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
 @router.post("/export/xlsx")
 def export_xlsx(body: dict):
     rows = body.get("data", {}).get("rows", [])
     df = pd.DataFrame(rows)
-    buf = io.BytesIO()
-    with pd.ExcelWriter(buf, engine="xlsxwriter") as w:
+    stream = io.BytesIO()
+    with pd.ExcelWriter(stream, engine="xlsxwriter") as w:
         df.to_excel(w, index=False, sheet_name="Feuille1")
-    buf.seek(0)
-    return StreamingResponse(buf, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    stream.seek(0)
+    return StreamingResponse(stream, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
