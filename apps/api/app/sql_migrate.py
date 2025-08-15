@@ -51,9 +51,18 @@ def _apply_sql_file(conn, path: str) -> None:
 
 
 def main() -> int:
-    dsn = settings.DATABASE_URL
+    dsn = settings.DATABASE_URL or ""
+    # Normalize SQLAlchemy-style schemes to psycopg-friendly URIs
+    # e.g. postgresql+psycopg:// -> postgresql://, postgresql+asyncpg:// -> postgresql://, postgres:// -> postgresql://
+    if dsn.startswith("postgresql+psycopg://"):
+        dsn = dsn.replace("postgresql+psycopg://", "postgresql://", 1)
+    elif dsn.startswith("postgresql+asyncpg://"):
+        dsn = dsn.replace("postgresql+asyncpg://", "postgresql://", 1)
+    elif dsn.startswith("postgres://"):
+        dsn = dsn.replace("postgres://", "postgresql://", 1)
+
     # Only Postgres supported in this simple runner
-    if not dsn.startswith('postgresql') and not dsn.startswith('postgres'):
+    if not dsn.startswith('postgresql://'):
         print('[sql_migrate] Non-Postgres DATABASE_URL detected; skipping SQL migrations.')
         return 0
 
