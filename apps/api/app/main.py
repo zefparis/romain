@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import os
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response, RedirectResponse
+from starlette.staticfiles import StaticFiles
 from app.routers import chat, docs, conversations, agenda, gdrive, onedrive, humdata
 from app.db import init_db, ensure_database_and_extensions
 
@@ -36,6 +39,18 @@ def on_startup():
     """Initialize database tables on startup (safe if already created)."""
     ensure_database_and_extensions()
     init_db()
+
+# Serve static files if present (Docker copies web dist into ./static)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """Serve favicon from /static if available, otherwise return 204."""
+    path = os.path.join("static", "favicon.ico")
+    if os.path.exists(path):
+        return RedirectResponse(url="/static/favicon.ico")
+    return Response(status_code=204)
 
 
 @router.get("/health")
