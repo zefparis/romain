@@ -51,7 +51,7 @@ export default function App(){
             <Sidebar currentId={current?.id} onSelect={(c)=>{ setCurrent(c); setSidebarOpen(false) }} onNew={async ()=>{ await onNewConversation(); setSidebarOpen(false) }} />
           </div>
         </div>
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
           <header className="p-2 md:p-4 border-b bg-white dark:bg-slate-900 dark:border-slate-700 flex items-center justify-between gap-2 sticky top-0 z-30">
             <div className="flex items-center gap-2">
               <button className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded border tap-transparent touch-manipulation" onClick={()=>setSidebarOpen(s=>!s)} aria-label="Ouvrir le menu">
@@ -59,7 +59,7 @@ export default function App(){
               </button>
               <h1 className="text-base md:text-xl font-bold truncate">Assistant Romain</h1>
             </div>
-            <nav className="flex flex-wrap gap-2 justify-end items-center">
+            <nav className="hidden md:flex flex-wrap gap-2 justify-end items-center">
               <button
                 onClick={()=>setTab('chat')}
                 className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
@@ -119,6 +119,27 @@ export default function App(){
               <FundingView />
             )}
           </main>
+
+          {/* Bottom Tab Bar (mobile only) */}
+          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:bg-slate-900/90 dark:border-slate-700">
+            <ul className="grid grid-cols-5">
+              <li>
+                <button onClick={()=>setTab('chat')} className={`w-full py-2 text-xs leading-tight flex flex-col items-center justify-center ${tab==='chat' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>Chat</button>
+              </li>
+              <li>
+                <button onClick={()=>setTab('docs')} className={`w-full py-2 text-xs leading-tight flex flex-col items-center justify-center ${tab==='docs' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>Docs</button>
+              </li>
+              <li>
+                <button onClick={()=>setTab('crises')} className={`w-full py-2 text-xs leading-tight flex flex-col items-center justify-center ${tab==='crises' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>Crises</button>
+              </li>
+              <li>
+                <button onClick={()=>setTab('jobs')} className={`w-full py-2 text-xs leading-tight flex flex-col items-center justify-center ${tab==='jobs' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>Emplois</button>
+              </li>
+              <li>
+                <button onClick={()=>setTab('funding')} className={`w-full py-2 text-xs leading-tight flex flex-col items-center justify-center ${tab==='funding' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>Funds</button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </QueryClientProvider>
