@@ -1,35 +1,80 @@
-﻿import React, { useState } from "react"
-const API = "" // via proxy Vite
+import React, { useEffect, useState } from 'react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from '../lib/queryClient'
+import Sidebar from './sidebar/Sidebar'
+import ChatView from './chat/ChatView'
+import DocumentsView from './documents/DocumentsView'
+import CrisesView from './humdata/CrisesView'
+import JobsView from './humdata/JobsView'
+import FundingView from './humdata/FundingView'
+import { api } from '../lib/api'
 
 export default function App(){
-  const [q,setQ]=useState("Bonjour, prépare un plan de rapport.")
-  const [a,setA]=useState("")
-  const [loading,setLoading]=useState(false)
+  const [current, setCurrent] = useState(null)
+  const [tab, setTab] = useState('chat') // 'chat' | 'docs' | 'crises' | 'jobs' | 'funding'
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  async function send(){
-    setLoading(true)
-    const r = await fetch(`/api/chat/complete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: q })
-    })
-    const j = await r.json()
-    setA(j.reply)
-    setLoading(false)
+  // Create a new conversation if none selected on first load
+  async function ensureConversation(){
+    if (current) return current
+    const c = await api.createConversation('Nouvelle conversation')
+    setCurrent(c)
+    return c
+  }
+
+  async function onNewConversation(){
+    const c = await api.createConversation('Nouvelle conversation')
+    setCurrent(c)
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold">Assistant Romain</h1>
-        <div className="mt-4 grid gap-3">
-          <textarea className="w-full p-3 border rounded-lg" rows={5} value={q} onChange={e=>setQ(e.target.value)} />
-          <button onClick={send} disabled={loading} className="px-4 py-2 rounded-lg bg-black text-white disabled:opacity-50">
-            {loading ? "…" : "Envoyer"}
-          </button>
-          <pre className="p-3 bg-white border rounded-lg whitespace-pre-wrap">{a}</pre>
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row safe-area-px">
+        {/* Sidebar: hidden on mobile unless toggled */}
+        <div className={`md:block ${sidebarOpen ? 'block' : 'hidden'} md:static fixed inset-0 z-40 md:z-auto`}>
+          <div className={`absolute inset-0 bg-black/40 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`} onClick={()=>setSidebarOpen(false)} />
+          <div className="relative md:relative md:translate-x-0 w-72 max-w-[80vw] h-screen md:h-screen bg-white shadow md:shadow-none">
+            <Sidebar currentId={current?.id} onSelect={(c)=>{ setCurrent(c); setSidebarOpen(false) }} onNew={async ()=>{ await onNewConversation(); setSidebarOpen(false) }} />
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="p-2 md:p-4 border-b bg-white flex items-center justify-between gap-2 sticky top-0 z-30">
+            <div className="flex items-center gap-2">
+              <button className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded border tap-transparent touch-manipulation" onClick={()=>setSidebarOpen(s=>!s)} aria-label="Ouvrir le menu">
+                <span className="i--menu">≡</span>
+              </button>
+              <h1 className="text-base md:text-xl font-bold truncate">Assistant Romain</h1>
+            </div>
+            <nav className="flex flex-wrap gap-2 justify-end">
+              <button onClick={()=>setTab('chat')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='chat'?'bg-black text-white':'bg-slate-200'}`}>Chat</button>
+              <button onClick={()=>setTab('docs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='docs'?'bg-black text-white':'bg-slate-200'}`}>Documents</button>
+              <button onClick={()=>setTab('crises')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='crises'?'bg-black text-white':'bg-slate-200'}`}>Crises</button>
+              <button onClick={()=>setTab('jobs')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='jobs'?'bg-black text-white':'bg-slate-200'}`}>Emplois</button>
+              <button onClick={()=>setTab('funding')} className={`px-3 py-2 rounded tap-transparent touch-manipulation text-sm md:text-base ${tab==='funding'?'bg-black text-white':'bg-slate-200'}`}>Financements</button>
+            </nav>
+          </header>
+          <main className="flex-1 flex min-w-0">
+            {tab==='chat' ? (
+              current ? (
+                <ChatView conversation={current} />
+              ) : (
+                <div className="p-6 text-slate-600">
+                  <button onClick={ensureConversation} className="px-4 py-2 rounded bg-black text-white">Nouvelle conversation</button>
+                </div>
+              )
+            ) : tab==='docs' ? (
+              <DocumentsView />
+            ) : tab==='crises' ? (
+              <CrisesView />
+            ) : tab==='jobs' ? (
+              <JobsView />
+            ) : (
+              <FundingView />
+            )}
+          </main>
         </div>
       </div>
-    </div>
+    </QueryClientProvider>
   )
 }
+

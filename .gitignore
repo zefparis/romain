@@ -6,6 +6,8 @@ __pycache__/
 node_modules/
 apps/web/dist/
 static/
+uploads/
+.env.production
 .DS_Store
 .idea/
 .vscode/

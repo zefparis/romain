@@ -1,3 +1,5 @@
+# Root-level Dockerfile to ensure Railway uses Docker builder
+# --- Build Web ---
 FROM node:20-alpine AS web
 WORKDIR /app/web
 COPY apps/web/package*.json ./
@@ -5,6 +7,7 @@ RUN npm ci
 COPY apps/web .
 RUN npm run build
 
+# --- API ---
 FROM python:3.11-slim AS api
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
@@ -15,5 +18,5 @@ COPY apps/api ./apps/api
 COPY --from=web /app/web/dist ./static
 WORKDIR /app/apps/api
 ENV PORT=8000
-# Run DB migrations on startup, then launch the API. Use $PORT provided by platform if set.
+# Run DB migrations then start the API on the provided PORT
 CMD ["/bin/sh", "-c", "alembic -c apps/api/alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

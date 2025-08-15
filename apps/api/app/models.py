@@ -20,9 +20,92 @@ class Conversation(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_archived = Column(Boolean, default=False)
-    
+
     # Relations
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
+
+
+class Crisis(Base):
+    __tablename__ = "crises"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source = Column(String(50), nullable=False, index=True)
+    source_id = Column(String(100), nullable=False, index=True, unique=True)
+    title = Column(String(500), nullable=False)
+    country = Column(String(200))
+    url = Column(Text)
+    published_at = Column(DateTime)
+    raw = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class JobPosting(Base):
+    __tablename__ = "job_postings"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source = Column(String(50), nullable=False, index=True)
+    source_id = Column(String(100), nullable=False, index=True, unique=True)
+    title = Column(String(500), nullable=False)
+    org = Column(String(255))
+    location = Column(String(255))
+    url = Column(Text)
+    published_at = Column(DateTime)
+    deadline = Column(DateTime)
+    raw = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class FundingRecord(Base):
+    __tablename__ = "funding_records"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source = Column(String(50), nullable=False, index=True)
+    source_id = Column(String(100), nullable=False, index=True)
+    year = Column(Integer, index=True)
+    country = Column(String(200), index=True)
+    cluster = Column(String(200), index=True)
+    donor = Column(String(255))
+    recipient = Column(String(255))
+    amount = Column(Float)
+    currency = Column(String(10))
+    raw = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class User(Base):
+    """Utilisateur applicatif (simple)."""
+    __tablename__ = "users"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String(255))
+    name = Column(String(255))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class OAuthToken(Base):
+    """Tokens OAuth par fournisseur et par utilisateur."""
+    __tablename__ = "oauth_tokens"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    provider = Column(String(50), nullable=False, index=True)  # 'google' | 'onedrive'
+    subject = Column(String(255))  # identifiant utilisateur distant (optionnel)
+    # Données
+    access_token = Column(Text, nullable=False)  # chiffré si clé fournie
+    refresh_token = Column(Text)                 # chiffré si clé fournie
+    scope = Column(Text)
+    token_type = Column(String(50))
+    expires_at = Column(DateTime)  # UTC
+    raw = Column(Text)  # JSON complet chiffré (optionnel)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_archived = Column(Boolean, default=False)
+    
+    # Relations (aucune relation directe avec les messages ici)
 
 class Message(Base):
     """Modèle pour les messages dans les conversations"""

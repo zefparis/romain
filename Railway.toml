@@ -1,0 +1,8 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infra/Dockerfile"
+
+[deploy]
+# Let the Dockerfile CMD run migrations and start the server
+numReplicas = 1
+restartPolicyType = "ON_FAILURE"

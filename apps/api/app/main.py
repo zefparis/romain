@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import chat, docs, conversations, agenda
+from app.routers import chat, docs, conversations, agenda, gdrive, onedrive, humdata
 from app.db import init_db, ensure_database_and_extensions
 
 app = FastAPI(title="Romain Assistant API", version="0.1.0")
@@ -16,9 +16,16 @@ app.add_middleware(
 )
 
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
+# Also mount chat under /api/chat to match frontend client
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(docs.router, prefix="/docs", tags=["docs"])
-app.include_router(conversations.router, prefix="/api/conversations", tags=["conversations"])
+# Also mount docs under /api/docs to match frontend paths
+app.include_router(docs.router, prefix="/api/docs", tags=["docs"])
+app.include_router(conversations.router, prefix="/api", tags=["conversations"])
 app.include_router(agenda.router, prefix="/api/agenda", tags=["agenda"])
+app.include_router(gdrive.router, prefix="/api/integrations/google", tags=["integrations:google"])
+app.include_router(onedrive.router, prefix="/api/integrations/onedrive", tags=["integrations:onedrive"])
+app.include_router(humdata.router, prefix="/api", tags=["humdata"])
 
 
 router = APIRouter()

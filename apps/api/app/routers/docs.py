@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from fastapi import APIRouter
-from fastapi.responses import StreamingResponse, Response
+from fastapi import APIRouter, UploadFile, File
+from fastapi.responses import StreamingResponse, Response, FileResponse
 from jinja2 import Environment, FileSystemLoader
 import io, pandas as pd
+import os
 
 # WeasyPrint en option (Windows peut manquer de libs GTK/Pango/Cairo)
 HAS_WEASY = False
@@ -14,6 +15,8 @@ except Exception:
 
 router = APIRouter()
 env = Environment(loader=FileSystemLoader("templates"))
+UPLOAD_DIR = os.path.abspath(os.path.join(os.getcwd(), "uploads"))
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/export/pdf")
 def export_pdf(body: dict):
@@ -66,3 +69,30 @@ def export_xlsx(body: dict):
         df.to_excel(w, index=False, sheet_name="Feuille1")
     stream.seek(0)
     return StreamingResponse(stream, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+@router.post("/upload")
+async def upload_files(files: list[UploadFile] = File(...)):
+    saved = []
+    for f in files:
+        dest = os.path.join(UPLOAD_DIR, f.filename)
+        with open(dest, "wb") as out:
+            content = await f.read()
+            out.write(content)
+        saved.append({"name": f.filename, "size": len(content)})
+    return {"files": saved}
+
+@router.get("/files")
+def list_files():
+    items = []
+    for name in sorted(os.listdir(UPLOAD_DIR)):
+        path = os.path.join(UPLOAD_DIR, name)
+        if os.path.isfile(path):
+            items.append({"name": name, "size": os.path.getsize(path)})
+    return {"files": items}
+
+@router.get("/files/{name}")
+def get_file(name: str):
+    path = os.path.join(UPLOAD_DIR, name)
+    if not os.path.isfile(path):
+        return Response(status_code=404)
+    return FileResponse(path, filename=name)

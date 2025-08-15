@@ -11,6 +11,7 @@ rq
 boto3
 jinja2
 weasyprint
+python-multipart
 python-docx
 docxtpl
 pandas
@@ -20,3 +21,8 @@ httpx
 tenacity
 structlog
 openai>=1.42.0
+google-auth
+google-auth-oauthlib
+google-api-python-client
+msal
+cryptography
