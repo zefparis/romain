@@ -54,7 +54,15 @@ def complete_stream(body: dict):
         def gen_empty():
             yield "data: (message vide)\n\n"
             yield "data: [DONE]\n\n"
-        return StreamingResponse(gen_empty(), media_type="text/event-stream")
+        return StreamingResponse(
+            gen_empty(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+                "Connection": "keep-alive",
+            },
+        )
 
     def event_stream():
         # Local fallback (pas de clé): simule un streaming mot à mot
@@ -87,4 +95,12 @@ def complete_stream(body: dict):
             yield f"data: [ERROR] {type(e).__name__}: {e}\n\n"
             yield "data: [DONE]\n\n"
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
