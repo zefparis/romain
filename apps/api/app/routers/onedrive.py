@@ -20,7 +20,9 @@ MS_CLIENT_SECRET = os.getenv("MS_CLIENT_SECRET", "")
 MS_TENANT = os.getenv("MS_TENANT", "common")
 MS_REDIRECT_URI = os.getenv("MS_REDIRECT_URI", "http://127.0.0.1:8000/api/integrations/onedrive/callback")
 
-SCOPES = ["Files.Read"]  # read-only phase 1
+# Request offline_access to obtain refresh tokens; Files.Read covers user drive.
+# Files.Read.All can be added if you need org-wide or shared items access (requires admin consent).
+SCOPES = ["offline_access", "Files.Read"]
 AUTHORITY = f"https://login.microsoftonline.com/{MS_TENANT}"
 
 
@@ -88,15 +90,16 @@ GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 async def list_root(request: Request, q: str | None = None, db: Session = Depends(get_db)):
     token = _get_token(db, request)
     headers = {"Authorization": f"Bearer {token}"}
-    url = f"{GRAPH_BASE}/me/drive/root/children"
+    # Use server-side search if a query is provided, otherwise list root children
+    if q and q.strip():
+        url = f"{GRAPH_BASE}/me/drive/root/search(q='{q.strip()}')"
+    else:
+        url = f"{GRAPH_BASE}/me/drive/root/children"
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.get(url, headers=headers)
         r.raise_for_status()
         data = r.json()
     items = data.get("value", [])
-    if q:
-        ql = q.lower()
-        items = [it for it in items if ql in it.get("name", "").lower()]
     # map minimal shape
     files = [
         {"id": it.get("id"), "name": it.get("name"), "mimeType": it.get("file", {}).get("mimeType", "folder"), "size": it.get("size")}
