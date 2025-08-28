@@ -71,7 +71,7 @@ export default function ChatView({ conversation, onFirstResponse }){
   }
 
   return (
-    <section className="flex-1 flex flex-col">
+    <section className="flex-1 flex flex-col relative">
       <div className="border-b bg-white dark:bg-slate-900 dark:border-slate-700 p-3 flex items-center justify-between">
         <h2 className="font-semibold text-slate-900 dark:text-slate-100">{conversation?.title || 'Nouvelle conversation'}</h2>
         {conversation?.id && (
@@ -148,6 +148,17 @@ export default function ChatView({ conversation, onFirstResponse }){
             </div>
           )}
         </>
+      )}
+      {!!(conversation?.id && lastAssistant) && (
+        <div className="fixed right-4 bottom-20 md:bottom-24 z-30">
+          <button
+            aria-label="Copier la dernière réponse"
+            className="px-3 py-2 text-xs rounded shadow-lg border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+            onClick={copyLastAssistant}
+          >
+            Copier la dernière réponse
+          </button>
+        </div>
       )}
       <ChatInput
         disabled={sendMutation.isPending || !conversation}
