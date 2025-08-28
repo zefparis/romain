@@ -8,17 +8,18 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.services.oauth_tokens import save_oauth_token, get_oauth_token, needs_refresh
 from app.services.session import get_or_create_current_user
+from app.config import settings
 
 router = APIRouter()
 
 # DEV single-user token cache
 _OD_CACHE = {"token": None, "expiry": 0}
 
-# Config via env
-MS_CLIENT_ID = os.getenv("MS_CLIENT_ID", "")
-MS_CLIENT_SECRET = os.getenv("MS_CLIENT_SECRET", "")
-MS_TENANT = os.getenv("MS_TENANT", "common")
-MS_REDIRECT_URI = os.getenv("MS_REDIRECT_URI", "http://127.0.0.1:8000/api/integrations/onedrive/callback")
+# Config via app settings (loaded from .env)
+MS_CLIENT_ID = settings.MS_CLIENT_ID
+MS_CLIENT_SECRET = settings.MS_CLIENT_SECRET
+MS_TENANT = settings.MS_TENANT
+MS_REDIRECT_URI = settings.MS_REDIRECT_URI
 
 # Request offline_access to obtain refresh tokens; Files.Read covers user drive.
 # Files.Read.All can be added if you need org-wide or shared items access (requires admin consent).
@@ -56,7 +57,7 @@ def callback(request: Request, db: Session = Depends(get_db)):
     _OD_CACHE["expiry"] = time.time() + token.get("expires_in", 3600)
     save_oauth_token(db, provider="onedrive", subject=None, token=token, user_id=user.id)
 
-    web_url = os.getenv("WEB_APP_URL", "http://127.0.0.1:5173")
+    web_url = settings.WEB_APP_URL or "http://127.0.0.1:5173"
     return RedirectResponse(f"{web_url}#onedrive=connected")
 
 
